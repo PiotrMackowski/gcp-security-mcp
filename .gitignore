@@ -1,0 +1,17 @@
+# Build output
+/gcp-security-mcp
+*.exe
+
+# State file (contains finding tracking data)
+state.json
+
+# OAuth2 token
+token.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store

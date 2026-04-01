@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "gcp-security": {
+      "command": "go",
+      "args": ["run", "./cmd/gcp-security-mcp"],
+      "cwd": "/Users/piotr.mackowski/gcp-security-mcp",
+      "env": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "/path/to/service-account.json"
+      }
+    }
+  }
+}
