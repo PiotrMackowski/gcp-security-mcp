@@ -163,5 +163,36 @@ func (t *Tracker) persist() error {
 	if err != nil {
 		return fmt.Errorf("marshal state: %w", err)
 	}
-	return os.WriteFile(t.path, data, 0o600)
+	return atomicWriteFile(t.path, data, 0o600)
+}
+
+// atomicWriteFile writes data to a temp file in the same directory, then
+// renames it to the target path. Prevents corruption from partial writes.
+func atomicWriteFile(path string, data []byte, perm os.FileMode) error {
+	dir := filepath.Dir(path)
+	tmp, err := os.CreateTemp(dir, ".tmp-*")
+	if err != nil {
+		return fmt.Errorf("create temp file: %w", err)
+	}
+	tmpPath := tmp.Name()
+
+	if _, err := tmp.Write(data); err != nil {
+		tmp.Close()
+		os.Remove(tmpPath)
+		return fmt.Errorf("write temp file: %w", err)
+	}
+	if err := tmp.Chmod(perm); err != nil {
+		tmp.Close()
+		os.Remove(tmpPath)
+		return fmt.Errorf("chmod temp file: %w", err)
+	}
+	if err := tmp.Close(); err != nil {
+		os.Remove(tmpPath)
+		return fmt.Errorf("close temp file: %w", err)
+	}
+	if err := os.Rename(tmpPath, path); err != nil {
+		os.Remove(tmpPath)
+		return fmt.Errorf("rename temp file: %w", err)
+	}
+	return nil
 }
